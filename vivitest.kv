@@ -1,0 +1,73 @@
+#:kivy 1.0.9
+#:import MeshLinePlot kivy.garden.graph.MeshLinePlot
+
+<ViViChart>:
+    id: ViViChart
+    GridLayout
+        rows:2
+        #rows_minimum: {0:600, 1:48}
+        size: root.size
+        spacing: 20
+        padding: 10
+
+        Graph:
+            id: graph
+            plot: MeshLinePlot
+            #xlabel: 'X'
+            #ylabel: 'Y'
+            xmin: -0
+            xmax: 300 
+            ymin: -1
+            ymax: 1
+            y_ticks_major: 1
+            x_ticks_minor: 5
+            x_grid: True
+            y_grid: True
+            y_grid_label: True
+            x_grid_label: True
+            padding: 5
+            size: self.parent.x, 600
+            pos: 0,0
+        
+        GridLayout:
+            id: bl
+            popup: popup.__self__
+            cols:3
+            size_hint: 1, 0.1
+            spacing: 0
+
+            Popup:
+                id: popup
+                size_hint: 1, 0.1
+                auto_dismiss: True
+                on_parent: if self.parent == bl: self.parent.remove_widget(self)
+
+                Bubble:
+                    id:bubb
+                    size_hint_y: None
+                    height: '48dp'
+                    
+                    BubbleButton:
+                        text: 'Search for devices'
+                        on_release: root.discover()
+                    BubbleButton:
+                        text: root.paired_device
+                        on_release: popup.dismiss()
+                
+            Button:
+                text: 'Bluetooth'
+                on_release:  self.parent.popup.open()
+                size_hint_y: None
+                height: '48dp'                    
+
+            Button:
+                text: 'Pause'
+                on_press: 
+                size_hint_y: None
+                height: '48dp'
+            
+            Button:
+                text: 'Exit'
+                on_press: app.exit()
+                size_hint_y: None
+                height: '48dp'
