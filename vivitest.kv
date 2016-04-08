@@ -3,6 +3,19 @@
 
 <ViViChart>:
     id: ViViChart
+    popup: popup.__self__
+    Popup
+        id: popup
+        title: 'Paired Devices'
+        size_hint: 0.8, 0.8
+        auto_dismiss: True
+        on_parent:if self.parent == ViViChart: self.parent.remove_widget(self)
+        on_open: popup2.dismiss()
+        
+        GridLayout
+            id: popup_gl
+            rows: root.n_paired_devices
+        
     GridLayout
         rows:2
         #rows_minimum: {0:600, 1:48}
@@ -30,17 +43,17 @@
             pos: 0,0
         
         GridLayout:
-            id: bl
-            popup: popup.__self__
+            id: gl
+            popup2: popup2.__self__
             cols:3
             size_hint: 1, 0.1
             spacing: 0
 
             Popup:
-                id: popup
+                id: popup2
                 size_hint: 1, 0.1
                 auto_dismiss: True
-                on_parent: if self.parent == bl: self.parent.remove_widget(self)
+                on_parent: if self.parent == gl: self.parent.remove_widget(self)
 
                 Bubble:
                     id:bubb
@@ -48,15 +61,16 @@
                     height: '48dp'
                     
                     BubbleButton:
+                        id: bb1
                         text: 'Search for devices'
-                        on_release: root.discover()
+                        on_release: popup.open()
                     BubbleButton:
                         text: root.paired_device
-                        on_release: popup.dismiss()
+                        on_release: popup2.dismiss()
                 
             Button:
                 text: 'Bluetooth'
-                on_release:  self.parent.popup.open()
+                on_release:  self.parent.popup2.open()
                 size_hint_y: None
                 height: '48dp'                    
 
@@ -71,3 +85,7 @@
                 on_press: app.exit()
                 size_hint_y: None
                 height: '48dp'
+
+<Paired>
+    Button:
+        text: 'Place_Holder'

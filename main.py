@@ -25,6 +25,10 @@ from jnius import autoclass
 class ViViChart(Widget):
     BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
     paired_device = StringProperty('No Paired Device')
+    n_paired_devices = NumericProperty(0)
+    
+    def paired(Button):
+        pass
 
     def __init__(self):
         super(ViViChart, self).__init__()
@@ -35,29 +39,35 @@ class ViViChart(Widget):
         self.graph.add_plot(self.plot)
         self.start = time.time()               
     
-    def get_socket_stream(self):
-        paired_devices = self.BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()        
-        return str(len(paired_devices))
+    def discover(self):
+        paired_devices = self.BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
+        #for device in paired_devices:
+        #    self.paired().add_widget()
         #paired_devices = [random.random(), random.random()]         
         #socket = None
-        #for device in paired_devices:
-        #    return device.getName()
-            #if device.getName() == name:
-            #    socket = device.createRfcommSocketToServiceRecord(
-            #        self.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-            #    recv_stream = socket.getInputStream()
-            #    break
-        #socket.connect()
+        for device in paired_devices:
+            if device.getName() == 'MDR-XB950BT':
+                return device.getName()
+                break
+            '''
+            if device.getName() == 'MDR-XB950BT':
+                socket = device.createRfcommSocketToServiceRecord(
+                    self.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+                recv_stream = socket.getInputStream()
+                self.paired_device = 'MDR-XB950BT'
+                break
+        socket.connect()
+        '''
         #return recv_stream
-    
+        #return len(paired_devices)#, recv_stream
     
     def update(self, outfile, dt):
         # Plot data in real time
         self.graph.remove_plot(self.plot)
         self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
         self.graph.add_plot(self.plot)
-        self.paired_device = self.get_socket_stream()
-        
+        #self.paired_device = self.get_socket_stream()
+        #self.n_paired_devices = self.get_socket_stream()
         # Data logging
         now = time.time() - self.start # Generate a time stamp
         data = ' ' #self.recv_stream
@@ -75,6 +85,7 @@ class ViViTestApp(App):
         # Write a header to the text file first thing
         outfile.write("Time, Data\n")
         chart = ViViChart()
+        chart.paired_device = chart.discover()
         Clock.schedule_interval(partial(chart.update, outfile), 1.0 / 60.0)
         return chart
      
