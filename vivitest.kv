@@ -2,20 +2,7 @@
 #:import MeshLinePlot kivy.garden.graph.MeshLinePlot
 
 <ViViChart>:
-    id: ViViChart
-    popup: popup.__self__
-    Popup
-        id: popup
-        title: 'Paired Devices'
-        size_hint: 0.8, 0.8
-        auto_dismiss: True
-        on_parent:if self.parent == ViViChart: self.parent.remove_widget(self)
-        on_open: popup2.dismiss()
-        
-        GridLayout
-            id: popup_gl
-            rows: root.n_paired_devices
-        
+    id: ViViChart        
     GridLayout
         rows:2
         #rows_minimum: {0:600, 1:48}
@@ -63,7 +50,8 @@
                     BubbleButton:
                         id: bb1
                         text: 'Search for devices'
-                        on_release: popup.open()
+                        on_release: root.search_for_devices()
+
                     BubbleButton:
                         text: root.paired_device
                         on_release: popup2.dismiss()
@@ -86,6 +74,6 @@
                 size_hint_y: None
                 height: '48dp'
 
-<Paired>
-    Button:
-        text: 'Place_Holder'
+#<Paired>
+#    Button:
+#        text: 'Place_Holder'
