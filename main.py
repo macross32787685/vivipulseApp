@@ -8,6 +8,10 @@ Version = 0.2
 Update note:
 Connecting to Bluetooth device and receive streams of data enabled
 """
+#TODO: 1. Fix BufferedReader readLine in complete
+#TODO: 2. Incoporate codes from Harrison
+#TODO: 3. Improve on API
+#TODO: 4. Establish app as service so it runs in backgroud
 
 import os
 import sys
@@ -32,11 +36,13 @@ BluetoothSocket = autoclass('android.bluetooth.BluetoothSocket')
 InputStreamReader = autoclass('java.io.InputStreamReader')
 BufferedReader = autoclass('java.io.BufferedReader')
 UUID = autoclass('java.util.UUID')
+
 # Create a listener function
 class ViViChart(Widget):
     paired_device = StringProperty('No Paired Device')
     n_paired_devices = NumericProperty(0)
     data = StringProperty(0)
+    recv_stream = ObjectProperty(None)
     #exception = StringProperty(None)
     
     def __init__(self):
@@ -75,30 +81,30 @@ class ViViChart(Widget):
         self.popup.open()
         #return recv_stream
         #return len(paired_devices)#, recv_stream
-    
+        
     def update(self, outfile, dt):
         # Plot data in real time
         self.graph.remove_plot(self.plot)
         self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
         self.graph.add_plot(self.plot)
         try:
-            recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream(), 'utf-8'))
-            #self.data = 1
+            recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
         except Exception:
-            #self.data = 2
             pass
         #self.paired_device = self.get_socket_stream()
         #self.n_paired_devices = self.get_socket_stream()
         # Data logging
-        now = time.time() - self.start # Generate a time stamp
+        now = time.time()# - self.start # Generate a time stamp
         try:
-            self.data = recv_stream.readLine()
-            outfile.write(str(now) + "," + str(self.data)  + "\n")
-            sys.stdout.write(".")
-            sys.stdout.flush()
-            #self.DataHandler(self, outfile)
+            while recv_stream.readLine is not None:
+                self.graph.remove_plot(self.plot)
+                self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
+                self.graph.add_plot(self.plot)
+                self.data = str(recv_stream.readLine())
+                outfile.write(str(now) + "," + str(self.data)  + "\n")
+                #sys.stdout.write(".")
+                #sys.stdout.flush()
         except Exception:
-            #self.data = 100
             pass
         
 class Device(Button):
@@ -123,8 +129,8 @@ class ViViTestApp(App):
         outfile = open(self.user_data_dir + "/vivipulse_data.csv", "w")
         # Write a header to the text file first thing
         outfile.write("Time, Data\n")
-        chart = ViViChart()
-        Clock.schedule_interval(partial(chart.update, outfile), 1.0/100)
+        chart = ViViChart()    
+        Clock.schedule_interval(partial(chart.update, outfile), 1.0)        
         return chart
      
     def exit(self):
