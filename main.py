@@ -88,24 +88,28 @@ class ViViChart(Widget):
         self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
         self.graph.add_plot(self.plot)
         try:
-            recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
+            self.data = str(BluetoothSocket.isConnected())
         except Exception:
             pass
-        #self.paired_device = self.get_socket_stream()
-        #self.n_paired_devices = self.get_socket_stream()
-        # Data logging
-        now = time.time()# - self.start # Generate a time stamp
-        try:
-            while recv_stream.readLine is not None:
-                self.graph.remove_plot(self.plot)
-                self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
-                self.graph.add_plot(self.plot)
-                self.data = str(recv_stream.readLine())
-                outfile.write(str(now) + "," + str(self.data)  + "\n")
-                #sys.stdout.write(".")
-                #sys.stdout.flush()
-        except Exception:
-            pass
+        else:
+            if BluetoothSocket.isConnected():
+                recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
+                while recv_stream.readLine is not None:
+                    d = str(recv_stream.readLine())
+                    now = time.time()
+                    outfile.write(str(now) + "," + str(d)  + "\n")
+        
+        #try:
+        #    while recv_stream.readLine is not None:
+        #        self.graph.remove_plot(self.plot)
+        #        self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
+        #        self.graph.add_plot(self.plot)
+        #        self.data = str(recv_stream.readLine())
+        #        outfile.write(str(now) + "," + str(self.data)  + "\n")
+        #        #sys.stdout.write(".")
+        #        #sys.stdout.flush()
+        #except Exception:
+        #    pass
         
 class Device(Button):
     def on_release(self):
