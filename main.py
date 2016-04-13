@@ -2,15 +2,15 @@
 """
 Created on Fri Apr  1 15:12:09 2016
 Updated on Sun Apr 10
-Version = 0.2
+Version = 0.25
 @author: zhen
 
 Update note:
 Connecting to Bluetooth device and receive streams of data enabled
 """
-#TODO: 1. Fix BufferedReader readLine in complete
-#TODO: 2. Incoporate codes from Harrison
-#TODO: 3. Improve on API
+#TODO: 1. Fix BufferedReader readLine incomplete issue (DONE!!!)
+#TODO: 2. Incoporate codes from Harrison 
+#TODO: 3. Improve on API 
 #TODO: 4. Establish app as service so it runs in backgroud
 
 import os
@@ -29,6 +29,7 @@ from functools import partial
 import random
 import time
 from jnius import autoclass
+import threading
 
 BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
@@ -44,6 +45,7 @@ class ViViChart(Widget):
     data = StringProperty(0)
     recv_stream = ObjectProperty(None)
     #exception = StringProperty(None)
+    data_thread = ObjectProperty(None)
     
     def __init__(self):
         super(ViViChart, self).__init__()
@@ -53,7 +55,7 @@ class ViViChart(Widget):
         self.plot.points = []
         self.graph.add_plot(self.plot)
         self.start = time.time()
-    
+        
     def discover(self):
         paired_devices = BluetoothAdapter.getDefaultAdapter().getBondedDevices().toArray()
         btns = []
@@ -88,16 +90,21 @@ class ViViChart(Widget):
         self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
         self.graph.add_plot(self.plot)
         try:
-            self.data = str(BluetoothSocket.isConnected())
+            BluetoothSocket.isConnected()
         except Exception:
             pass
         else:
-            if BluetoothSocket.isConnected():
-                recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
-                while recv_stream.readLine is not None:
-                    d = str(recv_stream.readLine())
-                    now = time.time()
-                    outfile.write(str(now) + "," + str(d)  + "\n")
+            if BluetoothSocket.isConnected() and self.data_thread is None:
+                self.data_thread = threading.Thread(target = self.data_logging, args = (outfile,))
+                self.data_thread.setDaemon(True)
+                self.data_thread.start()
+                    
+    def data_logging(self, outfile):
+        recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
+        while recv_stream.readLine is not None:
+            self.data = str(recv_stream.readLine())
+            now = time.time()
+            outfile.write(str(now) + "," + str(self.data)  + "\n")
         
         #try:
         #    while recv_stream.readLine is not None:
