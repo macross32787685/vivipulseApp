@@ -62,15 +62,6 @@ class ViViChart(Widget):
         for device in paired_devices:
             btns.append(Device(text = device.getName()))
         return btns
-        '''
-            if device.getName() == 'MDR-XB950BT':
-                socket = device.createRfcommSocketToServiceRecord(
-                    self.UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-                recv_stream = socket.getInputStream()
-                self.paired_device = 'MDR-XB950BT'
-                break
-        socket.connect()
-        '''
     
     def search_for_devices(self):
         self.popup=Popup(title='Paired devices', size_hint = [0.8, 0.8],
@@ -116,18 +107,6 @@ class ViViChart(Widget):
                 pass
             now = time.time()
             outfile.write(str(now) + "," + str(d)  + "\n")
-        
-        #try:
-        #    while recv_stream.readLine is not None:
-        #        self.graph.remove_plot(self.plot)
-        #        self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
-        #        self.graph.add_plot(self.plot)
-        #        self.data = str(recv_stream.readLine())
-        #        outfile.write(str(now) + "," + str(self.data)  + "\n")
-        #        #sys.stdout.write(".")
-        #        #sys.stdout.flush()
-        #except Exception:
-        #    pass
         
 class Device(Button):
     def on_release(self):

@@ -4,14 +4,32 @@
 <ViViChart>:
     id: ViViChart        
     GridLayout
-        rows:2
-        #rows_minimum: {0:600, 1:48}
+        rows: 3
         size: root.size
         spacing: 20
         padding: 10
-
+        
         Graph:
             id: graph
+            plot: MeshLinePlot
+            #xlabel: 'X'
+            #ylabel: 'Y'
+            xmin: -0
+            xmax: 300 
+            ymin: 300
+            ymax: 700
+            y_ticks_major: 500
+            x_ticks_minor: 100
+            #x_grid: True
+            #y_grid: True
+            y_grid_label: True
+            x_grid_label: True
+            padding: 5
+            size: self.parent.x, 600
+            pos: 0,0
+        
+        Graph:
+            id: graph2
             plot: MeshLinePlot
             #xlabel: 'X'
             #ylabel: 'Y'
