@@ -42,7 +42,7 @@ UUID = autoclass('java.util.UUID')
 class ViViChart(Widget):
     paired_device = StringProperty('No Paired Device')
     n_paired_devices = NumericProperty(0)
-    data = StringProperty(0)
+    data = ListProperty([])
     recv_stream = ObjectProperty(None)
     #exception = StringProperty(None)
     data_thread = ObjectProperty(None)
@@ -85,10 +85,16 @@ class ViViChart(Widget):
         #return len(paired_devices)#, recv_stream
         
     def update(self, outfile, dt):
+        
         # Plot data in real time
-        self.graph.remove_plot(self.plot)
-        self.plot.points = [( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
-        self.graph.add_plot(self.plot)
+        try:
+            self.graph.remove_plot(self.plot)
+            #self.data = random.sample(range(0,1024), 300) #mock data
+            self.plot.points = zip(range(1, len(self.data)+1), self.data)#[( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
+            self.graph.add_plot(self.plot)
+        except Exception:
+            pass
+        
         try:
             BluetoothSocket.isConnected()
         except Exception:
@@ -102,9 +108,14 @@ class ViViChart(Widget):
     def data_logging(self, outfile):
         recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
         while recv_stream.readLine is not None:
-            self.data = str(recv_stream.readLine())
+            d = recv_stream.readLine()
+            try:
+                self.data.append(float(d[:4]))
+                self.data = self.data[-300:] #plot the latest 300 data points in real-time
+            except Exception:
+                pass
             now = time.time()
-            outfile.write(str(now) + "," + str(self.data)  + "\n")
+            outfile.write(str(now) + "," + str(d)  + "\n")
         
         #try:
         #    while recv_stream.readLine is not None:

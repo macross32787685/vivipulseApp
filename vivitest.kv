@@ -17,12 +17,12 @@
             #ylabel: 'Y'
             xmin: -0
             xmax: 300 
-            ymin: -1
-            ymax: 1
-            y_ticks_major: 1
-            x_ticks_minor: 5
-            x_grid: True
-            y_grid: True
+            ymin: 300
+            ymax: 700
+            y_ticks_major: 500
+            x_ticks_minor: 100
+            #x_grid: True
+            #y_grid: True
             y_grid_label: True
             x_grid_label: True
             padding: 5
@@ -53,7 +53,7 @@
                         on_release: root.search_for_devices()
 
                     BubbleButton:
-                        text: str(root.data)
+                        text: str(len(root.data))
                         on_release: popup2.dismiss()
                 
             Button:
