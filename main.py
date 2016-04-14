@@ -30,6 +30,7 @@ import random
 import time
 from jnius import autoclass
 import threading
+import numpy
 
 BluetoothAdapter = autoclass('android.bluetooth.BluetoothAdapter')
 BluetoothDevice = autoclass('android.bluetooth.BluetoothDevice')
@@ -46,6 +47,9 @@ class ViViChart(Widget):
     recv_stream = ObjectProperty(None)
     #exception = StringProperty(None)
     data_thread = ObjectProperty(None)
+    spike_threshold = NumericProperty(None)
+    H1 = ListProperty([])
+    N1 = ListProperty([])
     
     def __init__(self):
         super(ViViChart, self).__init__()
@@ -72,19 +76,36 @@ class ViViChart(Widget):
             popup_grid.add_widget(btn) 
         self.popup.add_widget(popup_grid)
         self.popup.open()
-        #return recv_stream
-        #return len(paired_devices)#, recv_stream
+        
+    def H1_indices(data, spike_threshold):
+        result = []
+        for i in xrange(0, len(data)-1):
+            if data[i] > spike_threshold and data[i] > data[i - 1] and data[i] >= data[i + 1]:
+                result.append(i)
+        return numpy.array(result, dtype = int)
+    
+    # Locate indices for Notch 1 (N1)
+    def N1_indices(data, H1):
+        result = []
+        for i in xrange(0, len(H1) - 1):
+            # fist local minimum after H1 as the notch
+            pt = next(j for j in xrange(H1[i], H1[i+1]+1) if data[j] <= data[j - 1] and data[j] <= data[j + 1])
+            result.append(pt)
+        return numpy.array(result, dtype = int)
+        
+    # Locate indices of P2 peaks
+    #def H2_indices(data, H1, N1):
+    #    result = []
+    #    # in between each spike there is a mini-peak. find it
+    #    for i in xrange(0, len(H1)):
+    #        # these are subthreshold places where it goes from increasing to decreasing
+    #        d = data[H1[i]:N1[i]]
+    #        d = signal.savgol_filter(d, 5, 2, 2)
+    #        pt = next(j for j in xrange(1,(len(d) - 1)) if d[j-1] >= 0 and d[j+1] <= 0)
+    #        result.append(int(range(H1[i],N1[i])[pt]))
+    #    return numpy.array(result, dtype = int)
         
     def update(self, outfile, dt):
-        
-        # Plot data in real time
-        try:
-            self.graph.remove_plot(self.plot)
-            #self.data = random.sample(range(0,1024), 300) #mock data
-            self.plot.points = zip(range(1, len(self.data)+1), self.data)#[( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
-            self.graph.add_plot(self.plot)
-        except Exception:
-            pass
         
         try:
             BluetoothSocket.isConnected()
@@ -95,7 +116,34 @@ class ViViChart(Widget):
                 self.data_thread = threading.Thread(target = self.data_logging, args = (outfile,))
                 self.data_thread.setDaemon(True)
                 self.data_thread.start()
+    
                     
+        # Plot data in real time
+        try:
+            self.graph.remove_plot(self.plot)
+            #self.data = random.sample(range(0,1024), 300) #mock data
+            self.plot.points = zip(range(1, len(self.data)+1), self.data)#[( x, sin(x / 10.)) for x in range(0, int(200*random.random()) )] # This is just some mock data
+            self.graph.add_plot(self.plot)
+        except Exception:
+            pass
+        
+        try:
+            #x = random.sample(xrange(1,100), 10)
+            self.spike_threshold = int(numpy.mean(self.data) + numpy.std(self.data))
+        except Exception:
+            pass
+        
+        try:
+            self.H1 = self.H1_indices(self.data, self.spike_threshold)
+        except Exception:
+            pass
+        
+        try:
+            self.N1 = self.N1_indices(self.data, self.spike_threshold)
+        except Exception:
+            pass
+        
+        
     def data_logging(self, outfile):
         recv_stream = BufferedReader(InputStreamReader(BluetoothSocket.getInputStream()))
         while recv_stream.readLine is not None:
@@ -103,6 +151,7 @@ class ViViChart(Widget):
             try:
                 self.data.append(float(d[:4]))
                 self.data = self.data[-300:] #plot the latest 300 data points in real-time
+                self.data = numpy.array(self.data)
             except Exception:
                 pass
             now = time.time()

@@ -27,7 +27,12 @@
             padding: 5
             size: self.parent.x, 600
             pos: 0,0
-        
+            
+            Label:
+                text: str(root.spike_threshold)
+                top: self.parent.top
+                right: self.parent.right
+                
         Graph:
             id: graph2
             plot: MeshLinePlot
@@ -71,7 +76,7 @@
                         on_release: root.search_for_devices()
 
                     BubbleButton:
-                        text: str(len(root.data))
+                        text: str(root.spike_threshold)
                         on_release: popup2.dismiss()
                 
             Button:
