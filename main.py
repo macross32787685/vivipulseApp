@@ -2,7 +2,7 @@
 """
 Created on Fri Apr  1 15:12:09 2016
 Updated on Sun Apr 10
-Version = 0.25
+Version = 0.3
 @author: zhen
 
 Update note:
